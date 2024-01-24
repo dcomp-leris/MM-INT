@@ -1,4 +1,4 @@
-/* -*- P4_16 -*- */
+/* -*- P4_16 -*- */ //SOLUCAO 1 - SEM REGISTRADOR, SEM CABECALHO POLKA
 #include <core.p4>
 #include <v1model.p4>
 
@@ -48,12 +48,12 @@ header ipv4_t {
   bit<32> dstAddr;
 }
 
-struct polka_t_top {
+/*struct polka_t_top {
   macAddr_t dstAddr;
   macAddr_t srcAddr;
   bit<16>   etherType;
   bit<160>   routeId;
-}
+}*/
 
 header intoption_t {
   bit<4>    ver;
@@ -67,6 +67,8 @@ header intoption_t {
   bit<16>   domain_specific_id;
   bit<16>   domain_instruction;
   bit<16>   ds_flags;
+  //priority_v priority;
+  //qid_v      qid;
 
   
 }
@@ -79,27 +81,30 @@ header inthdr_t {
   bit<64>      ingress_global_timestamp;
   bit<64>      egress_global_timestamp;
   bit<32>      enq_timestamp;
+  //bit<32>      enq_qdepth;
   bit<32>      deq_timedelta;
   bit<32>      deq_qdepth;
-  enq_qdepth_v enq_qdepth0;
-  enq_qdepth_v enq_qdepth1;
-  //apenas para mostrar que sao alteraveis:
+  enq_qdepth_v enq_qdepth; //so vai passar por uma das filas (a que ele esta)
+  //enq_qdepth_v enq_qdepth1;
+  //n precisa mas eu vo deixar pra mostrar q eh mudavel
   priority_v priority;
   qid_v      qid;
 }
 
 struct metadata {
+    //acho q daqui n vai uasr nada (n vai clonar)
     bit<112>   routeId;
     bit<16>   etherType;
     bit<1> apply_sr;
     bit<9> port;
 
+    //talvez esse
     bit<8> int_info_remaining;
 }
 
 struct headers {
   ethernet_t          ethernet;
-  srcRoute_t          srcRoute;
+  //srcRoute_t          srcRoute; n tem o polka
   //ipv4_t              ipv4;
   intoption_t         int_option;
   inthdr_t[MAX_HOPS]  int_info;
@@ -131,12 +136,17 @@ parser MyParser(packet_in packet,
     }
 
     state parse_srcRouting {
-        packet.extract(hdr.srcRoute);
+        //packet.extract(hdr.srcRoute); n tem o polka
+        //transition parse_ipv4;
         transition parse_int_option;
     }
 
     state parse_ipv4 {
         packet.extract(hdr.ipv4);
+        //transition select(hdr.ethernet.etherType) {
+            //TYPE_IPV4: accept;
+            //TYPE_SRCROUTING: parse_int_option;
+        //}
         transition accept;
     }
 
@@ -184,16 +194,16 @@ control process_tunnel_encap(inout headers hdr,
         mark_to_drop(standard_metadata);
     }
 
-    action add_sourcerouting_header(egressSpec_t port, bit<1> sr, macAddr_t dmac,
-                                    bit<112>  routeIdPacket){
+    //solucao 3: sem polka.modifiquei as flowtabels todas do e1...e4 pra tirar o routeid tirei o "sr" tambem
+    action add_sourcerouting_header(egressSpec_t port, macAddr_t dmac){
 
         standard_metadata.egress_spec = port;
-        meta.apply_sr = sr;
+        //meta.apply_sr = sr; sobre clonagem: n fazer
 
         hdr.ethernet.dstAddr = dmac;
 
-        hdr.srcRoute.setValid();
-        hdr.srcRoute.routeId = routeIdPacket;
+        //hdr.srcRoute.setValid(); n tem polka
+        //hdr.srcRoute.routeId = routeIdPacket; n tem polka
 
         hdr.int_option.setValid();
         hdr.int_option.ver = 2;
@@ -237,11 +247,13 @@ control process_tunnel_encap(inout headers hdr,
 
     apply {
         tunnel_encap_process_sr.apply();
-        if(meta.apply_sr!=1){
-            hdr.srcRoute.setInvalid();
+        /*if(meta.apply_sr!=1){
+            //hdr.srcRoute.setInvalid(); //nao sei mas n tem polka entao
         }else{
             hdr.ethernet.etherType = TYPE_SRCROUTING;
-        }
+        }*/
+
+        hdr.ethernet.etherType = TYPE_SRCROUTING;
 
     }
 
@@ -261,6 +273,8 @@ control MyIngress(inout headers hdr,
     }
 
     action ipv4_forward(macAddr_t dstAddr, egressSpec_t port){
+      //hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
+
       hdr.ethernet.dstAddr = dstAddr;
 
       standard_metadata.egress_spec = port;
@@ -304,10 +318,10 @@ control MyIngress(inout headers hdr,
     } 
 
     apply {
-
+      //se for um pacote enviado pelo sender (TOS = 55 + SEM CABECALHO INT/POLKA)
       if (hdr.ipv4.isValid() && hdr.ethernet.etherType != TYPE_SRCROUTING ) { //55 em decimal, 37 em hexa
               if (hdr.ipv4.diffserv == 55){
-                process_tunnel_encap.apply(hdr, meta, standard_metadata);
+                process_tunnel_encap.apply(hdr, meta, standard_metadata); //adiciona o polka (removendo isso pra essa solucao3)
                 standard_metadata.priority = 1; //coleta de int vai passar na 0  em todos swithces - nao importa (le de tds registradores)
                 teste.apply();
                 teste2.apply();
@@ -317,15 +331,17 @@ control MyIngress(inout headers hdr,
                 ipv4_lpm.apply();
               }
       }
+      //pacote chegando num edge, remover o INT
       else if (hdr.ethernet.etherType == TYPE_SRCROUTING) {
               hdr.ethernet.etherType = TYPE_IPV4;
-              hdr.srcRoute.setInvalid();
+              //hdr.srcRoute.setInvalid(); n tem polka
 
               //remover toda a pilha int
               hdr.int_info.pop_front(MAX_HOPS);
 
               //além de excluir, tem que invalidar o int_info
               hdr.int_option.setInvalid();
+              //hdr.int_info.setInvalid();
 
               if (standard_metadata.ingress_port == 1){
                 standard_metadata.egress_spec = 2; //formalizou que todos os switches de borda, a porta 1 esta enviando pro host
@@ -405,7 +421,7 @@ control MyComputeChecksum(inout headers  hdr, inout metadata meta) {
 control MyDeparser(packet_out packet, in headers hdr) {
     apply {
         packet.emit(hdr.ethernet);
-        packet.emit(hdr.srcRoute);
+        //packet.emit(hdr.srcRoute);
         //packet.emit(hdr.ipv4);
         packet.emit(hdr.int_option);
         packet.emit(hdr.int_info);

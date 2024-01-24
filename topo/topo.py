@@ -47,7 +47,7 @@ class INTTopo(Topo):
                                     json_path = "/home/p4/labs/mpolka/int-mpolka/m-polka-int-edge.json",
                                     thrift_port = thrift_port,
                                     pcap_dump = pcap_dump,
-                                    log_console = False) #TESTE PARA LOG DOS SWITCHES
+                                    log_console = True)
             self.switch_list.append(switch)
             thrift_port = thrift_port + 1
 
@@ -61,12 +61,12 @@ class INTTopo(Topo):
                                     json_path = "/home/p4/labs/mpolka/int-mpolka/m-polka-int-core.json",
                                     thrift_port = thrift_port,
                                     pcap_dump = pcap_dump,
-                                    log_console = False)
+                                    log_console = True)
             self.switch_list.append(switch)
             thrift_port = thrift_port + 1
 
         info("*** Adding hosts\n")
-        n = 8 #agora tem 8
+        n = 5 #mudei de 4 pra 5 pra ter 2 hosts no e1
         for h in xrange(n):
             host = self.addHost('h%d' % (h + 1),
                                 ip = "10.0.1.%d/24" % (h+1),
@@ -87,13 +87,10 @@ class INTTopo(Topo):
         self.addLink(self.switch_list[8], self.switch_list[6])  #s5-s3
         self.addLink(self.switch_list[6], self.switch_list[1])  #s3-e2
         self.addLink(self.switch_list[1], self.host_list[1])    #e2-h2
-        self.addLink(self.host_list[4], self.switch_list[0])    #h5-e1 adicionado, provavelmente vai ser e1-eth3
-        self.addLink(self.host_list[5], self.switch_list[1])    #h6-e2 adicionado, provavelmente vai ser e2-eth3
-        self.addLink(self.host_list[6], self.switch_list[2])    #h7-e3 adicionado, provavelmente vai ser e3-eth3
-        self.addLink(self.host_list[7], self.switch_list[3])    #h8-e3 adicionado, provavelmente vai ser e4-eth3
+        self.addLink(self.host_list[4], self.switch_list[0],)  #h5-e1 adicionado, provavelmente vai ser e1-eth3
 
 def main():
-    num_hosts = 8 #mudei pra 8
+    num_hosts = 5 #mudei de 4 pra 5
 
     topo = INTTopo(args.behavioral_exe,
                    #args.json,

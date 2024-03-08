@@ -92,6 +92,7 @@ class INTTopo(Topo):
         self.addLink(self.host_list[6], self.switch_list[2])    #h7-e3 adicionado, provavelmente vai ser e3-eth3
         self.addLink(self.host_list[7], self.switch_list[3])    #h8-e3 adicionado, provavelmente vai ser e4-eth3
 
+        
 def main():
     num_hosts = 8 #mudei pra 8
 
@@ -129,8 +130,79 @@ def main():
     sleep(1)
 
     print "Ready !"
+    
+    h1 = net.get('h1')
+    h2 = net.get('h2')
+    h3 = net.get('h3')
+    h4 = net.get('h4')
+    h5 = net.get('h5')
+    h6 = net.get('h6')
+    h7 = net.get('h7')
+    h8 = net.get('h8')
+
+    #receivers
+    h1.cmd('sudo iperf -s -u &')
+    h2.cmd('sudo iperf -s -u &')
+    h3.cmd('sudo iperf -s -u &')
+    h4.cmd('sudo iperf -s -u &')
+    h5.cmd('sudo iperf -s -u &')
+    h6.cmd('sudo iperf -s -u &')
+    h7.cmd('sudo iperf -s -u &')
+    h8.cmd('sudo iperf -s -u &')
+
+    
+    #senders
+    #h1 and h5 > h2
+    h1.cmd('sudo iperf -c 10.0.1.2 -i 1 -t 600 -u -b 25M &') 
+    h5.cmd('sudo iperf -c 10.0.1.2 -i 1 -t 600 -u -b 25M &')
+
+    #h1 and h5 > h3
+    h1.cmd('sudo iperf -c 10.0.1.3 -i 1 -t 600 -u -b 25M &') 
+    h5.cmd('sudo iperf -c 10.0.1.3 -i 1 -t 600 -u -b 25M &')
+
+    #h1 and h5 > h4
+    h1.cmd('sudo iperf -c 10.0.1.4 -i 1 -t 600 -u -b 25M &') 
+    h5.cmd('sudo iperf -c 10.0.1.4 -i 1 -t 600 -u -b 25M &')
+
+    #h1 and h5 > h6
+    h1.cmd('sudo iperf -c 10.0.1.6 -i 1 -t 600 -u -b 25M &') 
+    h5.cmd('sudo iperf -c 10.0.1.6 -i 1 -t 600 -u -b 25M &')
+
+    #h1 and h5 > h7
+    h1.cmd('sudo iperf -c 10.0.1.7 -i 1 -t 600 -u -b 25M &') 
+    h5.cmd('sudo iperf -c 10.0.1.7 -i 1 -t 600 -u -b 25M &')
+
+    #h1 and h5 > h8
+    h1.cmd('sudo iperf -c 10.0.1.8 -i 1 -t 600 -u -b 25M &') 
+    h5.cmd('sudo iperf -c 10.0.1.8 -i 1 -t 600 -u -b 25M &')
+
+
+    #destiny h1 and h5:
+    h2.cmd('sudo iperf -c 10.0.1.1 -i 1 -t 600 -u -b 25M &')
+    h2.cmd('sudo iperf -c 10.0.1.5 -i 1 -t 600 -u -b 25M &')
+
+    h3.cmd('sudo iperf -c 10.0.1.1 -i 1 -t 600 -u -b 25M &')
+    h3.cmd('sudo iperf -c 10.0.1.5 -i 1 -t 600 -u -b 25M &')
+
+    h4.cmd('sudo iperf -c 10.0.1.1 -i 1 -t 600 -u -b 25M &')
+    h4.cmd('sudo iperf -c 10.0.1.5 -i 1 -t 600 -u -b 25M &')
+
+    h6.cmd('sudo iperf -c 10.0.1.1 -i 1 -t 600 -u -b 25M &')
+    h6.cmd('sudo iperf -c 10.0.1.5 -i 1 -t 600 -u -b 25M &')
+
+    h7.cmd('sudo iperf -c 10.0.1.1 -i 1 -t 600 -u -b 25M &')
+    h7.cmd('sudo iperf -c 10.0.1.5 -i 1 -t 600 -u -b 25M &')
+
+    h8.cmd('sudo iperf -c 10.0.1.1 -i 1 -t 600 -u -b 25M &')
+    h8.cmd('sudo iperf -c 10.0.1.5 -i 1 -t 600 -u -b 25M &')
+
+
+    print "Enviando pacotes"
 
     CLI( net )
+
+    
+
     net.stop()
 
 if __name__ == '__main__':

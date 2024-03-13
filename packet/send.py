@@ -37,10 +37,10 @@ def main():
     pkt = pkt/IP(id=identification, src= get_if_addr('eth0'), dst='10.0.1.2', tos = 55)/UDP(dport=1234, sport=random.randint(49152,65535))   #adicionando um header de udp para evitar resposta ICMP
     #pkt = pkt/IP(id=identification, src= get_if_addr('eth0'), dst=var_ip_dst, tos = 55)/UDP(dport=1234, sport=var_sport)
     try:
-        #while(True):
-        pkt.show2()
-        sendp(pkt, iface='eth0')
-        time.sleep(1)
+        while(True):
+            pkt.show2()
+            sendp(pkt, iface='eth0')
+            time.sleep(1)
         #time.sleep(1)
     except KeyboardInterrupt:
         sys.exit()

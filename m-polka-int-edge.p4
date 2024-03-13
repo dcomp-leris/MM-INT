@@ -28,11 +28,11 @@ header ethernet_t {
     macAddr_t srcAddr;
     bit<16>   etherType;
 }
-
+/*
 header srcRoute_t {
     bit<112>    routeId;
 }
-
+*/
 header ipv4_t {
   bit<4>  version;
   bit<4>  ihl;
@@ -93,7 +93,7 @@ header inthdr_t {
 
 struct metadata {
     //acho q daqui n vai uasr nada (n vai clonar)
-    bit<112>   routeId;
+    //bit<112>   routeId;
     bit<16>   etherType;
     bit<1> apply_sr;
     bit<9> port;

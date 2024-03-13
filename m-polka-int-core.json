@@ -1638,7 +1638,7 @@
       ["standard_metadata", "qid"]
     ]
   ],
-  "program" : "core-multiplas-filas-solucao1.bmv2/m-polka-int-core.p4i",
+  "program" : "novo-core.bmv2/m-polka-int-core.p4i",
   "__meta__" : {
     "version" : [2, 23],
     "compiler" : "https://github.com/p4lang/p4c"

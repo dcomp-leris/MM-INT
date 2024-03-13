@@ -47,7 +47,7 @@ class INTTopo(Topo):
                                     json_path = "/home/p4/labs/mpolka/int-mpolka/m-polka-int-edge.json",
                                     thrift_port = thrift_port,
                                     pcap_dump = pcap_dump,
-                                    log_console = True)
+                                    log_console = False) #TESTE PARA LOG DOS SWITCHES)
             self.switch_list.append(switch)
             thrift_port = thrift_port + 1
 
@@ -61,12 +61,12 @@ class INTTopo(Topo):
                                     json_path = "/home/p4/labs/mpolka/int-mpolka/m-polka-int-core.json",
                                     thrift_port = thrift_port,
                                     pcap_dump = pcap_dump,
-                                    log_console = True)
+                                    log_console = False) #TESTE PARA LOG DOS SWITCHES)
             self.switch_list.append(switch)
             thrift_port = thrift_port + 1
 
         info("*** Adding hosts\n")
-        n = 5 #mudei de 4 pra 5 pra ter 2 hosts no e1
+        n = 8 #agora tem 8
         for h in xrange(n):
             host = self.addHost('h%d' % (h + 1),
                                 ip = "10.0.1.%d/24" % (h+1),
@@ -87,10 +87,12 @@ class INTTopo(Topo):
         self.addLink(self.switch_list[8], self.switch_list[6])  #s5-s3
         self.addLink(self.switch_list[6], self.switch_list[1])  #s3-e2
         self.addLink(self.switch_list[1], self.host_list[1])    #e2-h2
-        self.addLink(self.host_list[4], self.switch_list[0],)  #h5-e1 adicionado, provavelmente vai ser e1-eth3
-
+        self.addLink(self.host_list[4], self.switch_list[0])    #h5-e1 adicionado, provavelmente vai ser e1-eth3
+        self.addLink(self.host_list[5], self.switch_list[1])    #h6-e2 adicionado, provavelmente vai ser e2-eth3
+        self.addLink(self.host_list[6], self.switch_list[2])    #h7-e3 adicionado, provavelmente vai ser e3-eth3
+        self.addLink(self.host_list[7], self.switch_list[3])    #h8-e3 adicionado, provavelmente vai ser e4-eth3
 def main():
-    num_hosts = 5 #mudei de 4 pra 5
+    num_hosts = 8 #mudei pra 8
 
     topo = INTTopo(args.behavioral_exe,
                    #args.json,
@@ -126,6 +128,74 @@ def main():
     sleep(1)
 
     print "Ready !"
+
+    h1 = net.get('h1')
+    h2 = net.get('h2')
+    h3 = net.get('h3')
+    h4 = net.get('h4')
+    h5 = net.get('h5')
+    h6 = net.get('h6')
+    h7 = net.get('h7')
+    h8 = net.get('h8')
+
+    #receivers
+    h1.cmd('sudo iperf -s -u &')
+    h2.cmd('sudo iperf -s -u &')
+    h3.cmd('sudo iperf -s -u &')
+    h4.cmd('sudo iperf -s -u &')
+    h5.cmd('sudo iperf -s -u &')
+    h6.cmd('sudo iperf -s -u &')
+    h7.cmd('sudo iperf -s -u &')
+    h8.cmd('sudo iperf -s -u &')
+
+    
+    # #senders
+    # #h1 and h5 > h2
+    # h1.cmd('sudo iperf -c 10.0.1.2 -i 1 -t 600 -u -b 10M &') 
+    # h5.cmd('sudo iperf -c 10.0.1.2 -i 1 -t 600 -u -b 10M &')
+
+    # #h1 and h5 > h3
+    # h1.cmd('sudo iperf -c 10.0.1.3 -i 1 -t 600 -u -b 10M &') 
+    # h5.cmd('sudo iperf -c 10.0.1.3 -i 1 -t 600 -u -b 10M &')
+
+    # #h1 and h5 > h4
+    # h1.cmd('sudo iperf -c 10.0.1.4 -i 1 -t 600 -u -b 10M &') 
+    # h5.cmd('sudo iperf -c 10.0.1.4 -i 1 -t 600 -u -b 10M &')
+
+    # #h1 and h5 > h6
+    # h1.cmd('sudo iperf -c 10.0.1.6 -i 1 -t 600 -u -b 10M &') 
+    # h5.cmd('sudo iperf -c 10.0.1.6 -i 1 -t 600 -u -b 10M &')
+
+    # #h1 and h5 > h7
+    # h1.cmd('sudo iperf -c 10.0.1.7 -i 1 -t 600 -u -b 10M &') 
+    # h5.cmd('sudo iperf -c 10.0.1.7 -i 1 -t 600 -u -b 10M &')
+
+    # #h1 and h5 > h8
+    # h1.cmd('sudo iperf -c 10.0.1.8 -i 1 -t 600 -u -b 10M &') 
+    # h5.cmd('sudo iperf -c 10.0.1.8 -i 1 -t 600 -u -b 10M &')
+
+
+    # #destiny h1 and h5:
+    # h2.cmd('sudo iperf -c 10.0.1.1 -i 1 -t 600 -u -b 10M &')
+    # h2.cmd('sudo iperf -c 10.0.1.5 -i 1 -t 600 -u -b 10M &')
+
+    # h3.cmd('sudo iperf -c 10.0.1.1 -i 1 -t 600 -u -b 10M &')
+    # h3.cmd('sudo iperf -c 10.0.1.5 -i 1 -t 600 -u -b 10M &')
+
+    # h4.cmd('sudo iperf -c 10.0.1.1 -i 1 -t 600 -u -b 10M &')
+    # h4.cmd('sudo iperf -c 10.0.1.5 -i 1 -t 600 -u -b 10M &')
+
+    # h6.cmd('sudo iperf -c 10.0.1.1 -i 1 -t 600 -u -b 10M &')
+    # h6.cmd('sudo iperf -c 10.0.1.5 -i 1 -t 600 -u -b 10M &')
+
+    # h7.cmd('sudo iperf -c 10.0.1.1 -i 1 -t 600 -u -b 10M &')
+    # h7.cmd('sudo iperf -c 10.0.1.5 -i 1 -t 600 -u -b 10M &')
+
+    # h8.cmd('sudo iperf -c 10.0.1.1 -i 1 -t 600 -u -b 10M &')
+    # h8.cmd('sudo iperf -c 10.0.1.5 -i 1 -t 600 -u -b 10M &')
+
+
+    print "Enviando pacotes"
 
     CLI( net )
     net.stop()

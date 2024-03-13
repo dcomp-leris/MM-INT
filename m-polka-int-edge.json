@@ -1920,7 +1920,7 @@
       ["standard_metadata", "qid"]
     ]
   ],
-  "program" : "edge-multiplas-filas-solucao1.bmv2/m-polka-int-edge.p4i",
+  "program" : "novo-edge.bmv2/m-polka-int-edge.p4i",
   "__meta__" : {
     "version" : [2, 23],
     "compiler" : "https://github.com/p4lang/p4c"
